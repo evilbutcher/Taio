@@ -1,0 +1,100 @@
+{
+  "actions" : [
+    {
+      "type" : "@comment",
+      "parameters" : {
+        "text" : {
+          "value" : "文本内容请填入关键词，中文逗号分隔即可"
+        }
+      }
+    },
+    {
+      "type" : "@text",
+      "parameters" : {
+        "text" : {
+          "value" : ""
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "\/\/ Get input\nconst keywords = $actions.inputValue;\nconst keyword = keywords.split(\"，\");\nvar items = [];\nvar results = [];\nvar msg = ``;\n\n!(async () => {\n  await getwb();\n  \/\/ Resolve with output\n  $actions.resolve(msg);\n})().catch(e => {\n  console.log(\"\", `❌失败! 原因: ${e}!`, \"\");\n});\n\nasync function getwb() {\n  var result = await $http.get(\n    \"https:\/\/m.weibo.cn\/api\/container\/getIndex?containerid=106003%26filter_type%3Drealtimehot\"\n  );\n  var obj = result.data;\n  var group = obj.data.cards[0][\"card_group\"];\n  var num = group.length;\n  for (var i = 0; i < num; i++) {\n    var item = group[i].desc;\n    items.push(item);\n  }\n  for (var j = 0; j < keyword.length; j++) {\n    getkeyword(\"微博\", results, keyword[j], items);\n  }\n  notify(results);\n}\n\nfunction getkeyword(text, result, key, items) {\n  for (var i = 0; i < items.length; i++) {\n    if (items[i].indexOf(key) != -1) {\n      result.push(`${items[i]}`);\n    }\n  }\n}\n\nfunction notify(result) {\n  for (var m = 0; m < result.length; m++) {\n    if (m == 0) {\n      msg += `${result[m]}`;\n    } else {\n      msg += `\\n${result[m]}`;\n    }\n  }\n}\n\n\/\/ Exception handling:\n\/\/  $actions.reject(\"Error\");\n\/\/  $actions.finish();"
+        }
+      }
+    },
+    {
+      "type" : "@ui.menu",
+      "parameters" : {
+        "prompt" : {
+          "value" : ""
+        },
+        "multiValue" : false,
+        "lines" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@text.encode",
+      "parameters" : {
+        "mode" : 0,
+        "decode" : false,
+        "text" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@text",
+      "parameters" : {
+        "text" : {
+          "value" : "sinaweibo:\/\/searchall?q=$",
+          "tokens" : [
+            {
+              "location" : 24,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@util.open-url",
+      "parameters" : {
+        "url" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "browser" : 1
+      }
+    }
+  ],
+  "buildVersion" : 1,
+  "name" : "微博热搜",
+  "clientMinVersion" : 1,
+  "summary" : "",
+  "icon" : {
+    "glyph" : "flame",
+    "color" : "#FCBD4D"
+  },
+  "clientVersion" : 6
+}
