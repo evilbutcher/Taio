@@ -1,0 +1,475 @@
+{
+  "actions" : [
+    {
+      "type" : "@comment",
+      "parameters" : {
+        "text" : {
+          "value" : "rid变量值填写对应的榜单数字：\n0全站，1动画，3音乐，4游戏，5娱乐，17单机，36科技，119鬼畜，129舞蹈，138搞笑。\nkeywords变量值内填写关键词，中文逗号分隔即可。"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "0"
+        },
+        "name" : {
+          "value" : "rid"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : ""
+        },
+        "name" : {
+          "value" : "keywords"
+        }
+      }
+    },
+    {
+      "type" : "@flow.get-variable",
+      "parameters" : {
+        "fallback" : 0,
+        "name" : {
+          "value" : "rid"
+        }
+      }
+    },
+    {
+      "type" : "@text",
+      "parameters" : {
+        "text" : {
+          "value" : "https:\/\/app.bilibili.com\/x\/v2\/rank\/region?rid=$",
+          "tokens" : [
+            {
+              "location" : 46,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@util.request",
+      "parameters" : {
+        "body" : {
+          "value" : ""
+        },
+        "url" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "method" : 0,
+        "headers" : {
+          "value" : "{\n  \"Content-Type\": \"application\/json\"\n}"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.inputValue;\nconst keywords = $actions.getVar(\"keywords\");\nconst keyword = keywords.split(\"，\");\n\nvar postresults = [];\nvar results = [];\n\nvar obj = JSON.parse(text);\nvar group = obj.data;\nvar num = group.length;\nfor (var i = 0; i < num; i++) {\n  var item = group[i].title;\n  var av = group[i].param;\n  var name = group[i].name;\n  var face = group[i].face;\n  var play = group[i].play;\n  if (play >= 10000) {\n    var num1 = (play \/ 10000).toFixed(1);\n    var playdetail = `${num1}万播放`;\n  } else {\n    playdetail = `${play}播放`;\n  }\n  var danmu = group[i].danmaku || 0;\n  if (danmu >= 10000) {\n    var num4 = (danmu \/ 10000).toFixed(1);\n    var danmudetail = `${num4}万弹幕`;\n  } else {\n    danmudetail = `${danmu}弹幕`;\n  }\n  var like = group[i].like;\n  if (like >= 10000) {\n    var num2 = (like \/ 10000).toFixed(1);\n    var likedetail = `${num2}万`;\n  } else {\n    likedetail = `${like}`;\n  }\n  var favourite = group[i].favourite;\n  if (favourite >= 10000) {\n    var num3 = (favourite \/ 10000).toFixed(1);\n    var favouritedetail = `${num3}万`;\n  } else {\n    favouritedetail = `${favourite}`;\n  }\n  var reply = group[i].reply;\n  if (reply >= 10000) {\n    var num5 = (reply \/ 10000).toFixed(1);\n    var replydetail = `${num5}万`;\n  } else {\n    replydetail = `${reply}`;\n  }\n  var time = group[i].pubdate;\n  var date = new Date(time * 1000);\n  var Y = date.getFullYear() + \"-\";\n  var M =\n    (date.getMonth() + 1 < 10\n      ? \"0\" + (date.getMonth() + 1)\n      : date.getMonth() + 1) + \"-\";\n  var D = (date.getDate() < 10 ? \"0\" + date.getDate() : date.getDate()) + \" \";\n  var h =\n    (date.getHours() < 10 ? \"0\" + date.getHours() : date.getHours()) + \":\";\n  var m =\n    (date.getMinutes() < 10 ? \"0\" + date.getMinutes() : date.getMinutes()) +\n    \":\";\n  var s = date.getSeconds() < 10 ? \"0\" + date.getSeconds() : date.getSeconds();\n  var pubdate = Y + M + D + h + m + s;\n  postresults.push({\n    title: item,\n    name: name,\n    av: av,\n    play: playdetail,\n    like: likedetail,\n    pubdate: pubdate,\n    favourite: favouritedetail,\n    danmu: danmudetail,\n    reply: replydetail,\n    face: face\n  });\n}\n\nfor (var j = 0; j < keyword.length; j++) {\n  getkeyword(\"Bilibili\", results, keyword[j], postresults);\n}\n\nfunction getkeyword(text, result, key, items) {\n  for (var i = 0; i < items.length; i++) {\n    if (items[i].title.indexOf(key) != -1) {\n      results.push(items[i]);\n    }\n  }\n}\n\n$actions.resolve(JSON.stringify(results));"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "results"
+        }
+      }
+    },
+    {
+      "type" : "@flow.get-variable",
+      "parameters" : {
+        "fallback" : 0,
+        "name" : {
+          "value" : "results"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.inputValue;\nvar obj = JSON.parse(text);\nvar names = \"\";\nfor (var i = 0; i < obj.length; i++) {\n  if (i == obj.length - 1) {\n    names += `${obj[i].title}`;\n  } else {\n    names += `${obj[i].title}\\n`;\n  }\n}\n$actions.resolve(names);"
+        }
+      }
+    },
+    {
+      "type" : "@ui.menu",
+      "parameters" : {
+        "prompt" : {
+          "value" : ""
+        },
+        "multiValue" : false,
+        "lines" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "findthis"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.inputValue;\nconst res = $actions.getVar(\"results\");\nconst results = JSON.parse(res);\nfor (var i = 0; i < results.length; i++) {\n  if (results[i].title == text) {\n    var output = JSON.stringify(results[i]);\n    $actions.resolve(output);\n  }\n}"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "showthis"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar av = content.av;\n$actions.resolve(av);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "av"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar like = content.like;\nvar favourite = content.favourite;\nvar reply = content.reply;\nvar detail = `${like}   ${favourite}   ${reply}`;\n$actions.resolve(detail);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "like"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar play = content.play;\nvar danmu = content.danmu;\nvar data = `${play}   ${danmu}`;\n$actions.resolve(data);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "data"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar date = content.pubdate;\n$actions.resolve(date);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "pubdate"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar face = content.face;\n$actions.resolve(face);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "face"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar name = content.name;\n$actions.resolve(name);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "name"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar like = content.like;\nvar like = `${like}`;\n$actions.resolve(like);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "like"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar favourite = content.favourite;\nvar favourite = `${favourite}`;\n$actions.resolve(favourite);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "favourite"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar reply = content.reply;\nvar reply = `${reply}`;\n$actions.resolve(reply);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "reply"
+        }
+      }
+    },
+    {
+      "type" : "@text",
+      "parameters" : {
+        "text" : {
+          "value" : "https:\/\/player.bilibili.com\/player.html?aid=$",
+          "tokens" : [
+            {
+              "location" : 44,
+              "value" : "av"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@ui.render-html",
+      "parameters" : {
+        "showsProgress" : true,
+        "title" : {
+          "value" : ""
+        },
+        "html" : {
+          "value" : "<!DOCTYPE html>\n<html>\n\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style type=\"text\/css\">\n    .face {\n      margin-top: 5px;\n      width: 80px;\n      height: 80px;\n      border-radius: 200px;\n    }\n\n    .video {\n      position: absolute;\n      width: 100%;\n      height: 100%;\n      left: 0;\n      top: 0;\n    }\n  <\/style>\n<\/head>\n\n<body style=\"background-color:AliceBlue\">\n  <h3 style=\"text-align:center\">\n    <table>\n      <tr>\n        <td><img class=\"face\" src=\"$\" alt=\"Portrait\"><\/td>\n        <td><span>$<\/span><\/td>\n      <\/tr>\n    <\/table>\n  <\/h3>\n  <div style=\"text-align:center; color:rgb(153,153,153); font-size:15px\"><b>$ <\/b> $ $ <\/div>\n  <br>\n  <div style=\"position: relative; padding: 30% 45%;\">\n    <iframe class=\"video\" src=\"$\" frameborder=\"no\" scrolling=\"no\"><\/iframe>\n  <\/div>\n  <div>\n    <table style=\"margin:auto\">\n      <tr>\n        <td><span>$<\/span><\/td>\n        <td><img src=\"https:\/\/raw.githubusercontent.com\/evilbutcher\/Taio\/master\/Picture\/like.png\" alt=\"like\"\n            height=\"45%\" width=\"45%\"><\/td>\n        <td><span>$<\/span><\/td>\n        <td><img src=\"https:\/\/raw.githubusercontent.com\/evilbutcher\/Taio\/master\/Picture\/favourite.png\" alt=\"favourite\"\n            height=\"45%\" width=\"45%\">\n        <\/td>\n      <\/tr>\n    <\/table>\n  <\/div>\n\n<\/html>\n",
+          "tokens" : [
+            {
+              "location" : 1112,
+              "value" : "favourite"
+            },
+            {
+              "location" : 928,
+              "value" : "like"
+            },
+            {
+              "location" : 805,
+              "value" : "@input"
+            },
+            {
+              "location" : 704,
+              "value" : "pubdate"
+            },
+            {
+              "location" : 702,
+              "value" : "data"
+            },
+            {
+              "location" : 695,
+              "value" : "name"
+            },
+            {
+              "location" : 572,
+              "value" : "findthis"
+            },
+            {
+              "location" : 530,
+              "value" : "face"
+            }
+          ]
+        },
+        "opaque" : true
+      }
+    }
+  ],
+  "buildVersion" : 1,
+  "name" : "Bilibili",
+  "clientMinVersion" : 1,
+  "summary" : "",
+  "icon" : {
+    "glyph" : "heart.circle",
+    "color" : "#FB6666"
+  },
+  "clientVersion" : 6
+}
