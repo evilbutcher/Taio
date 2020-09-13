@@ -1,0 +1,350 @@
+{
+  "actions" : [
+    {
+      "type" : "@comment",
+      "parameters" : {
+        "text" : {
+          "value" : "文本内容请填写RSS订阅链接"
+        }
+      }
+    },
+    {
+      "type" : "@text",
+      "parameters" : {
+        "text" : {
+          "value" : "https:\/\/rsshub.app\/twitter\/user\/OriginalFunko"
+        }
+      }
+    },
+    {
+      "type" : "@text.encode",
+      "parameters" : {
+        "mode" : 0,
+        "decode" : false,
+        "text" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@util.request",
+      "parameters" : {
+        "body" : {
+          "value" : ""
+        },
+        "url" : {
+          "value" : "https:\/\/api.rss2json.com\/v1\/api.json?rss_url=$",
+          "tokens" : [
+            {
+              "location" : 45,
+              "value" : "@input"
+            }
+          ]
+        },
+        "method" : 0,
+        "headers" : {
+          "value" : "{\n  \"Content-Type\": \"application\/json\"\n}"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.inputValue;\nitemsrss = [];\nvar obj = JSON.parse(text);\nvar titlerss = obj.feed.title;\nvar items = obj.items;\nvar num = items.length;\nfor (var i = 0; i < num; i++) {\n  var title = items[i].title;\n  var url = items[i].link;\n  if (items[i].thumbnail != null) {\n    var cover = items[i].thumbnail;\n  } else {\n    cover = \"https:\/\/raw.githubusercontent.com\/58xinian\/icon\/master\/hot.png\";\n  }\n  if (items[i].description != null) {\n    var des = items[i].description;\n    var postdes = des\n      .replace(new RegExp(\/\\\\n\/, \"gm\"), \"\")\n      .replace(new RegExp(\/\\<.*?\\>\/, \"gm\"), \"\");\n    var finaldes = postdes.trim();\n    var description = \"\\n🔎详情：\" + finaldes.slice(0, 150);\n    if (finaldes.length > 150) {\n      description += \"...\"\n    }\n  } else {\n    description = \"\\n🔎详情：暂无\";\n  }\n  if (items[i].author == \"\") {\n    var author = \"\\n👨‍💻作者：暂无\";\n  } else {\n    author = \"\\n👨‍💻作者：\" + items[i].author;\n  }\n  itemsrss.push({\n    titlerss: titlerss,\n    title: title,\n    author: author,\n    content: description,\n    url: url,\n    cover: cover\n  });\n}\n$actions.resolve(JSON.stringify(itemsrss));\n"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "results"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"results\");\nvar content = JSON.parse(text);\nvar titlerss = content[0].titlerss;\n$actions.resolve(titlerss);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "titlerss"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"results\");\nvar obj = JSON.parse(text);\nvar names = \"\";\nfor (var i = 0; i < obj.length; i++) {\n  if (i == obj.length - 1) {\n    names += `${obj[i].title}`;\n  } else {\n    names += `${obj[i].title}\\n`;\n  }\n}\n$actions.resolve(names);"
+        }
+      }
+    },
+    {
+      "type" : "@ui.menu",
+      "parameters" : {
+        "prompt" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "titlerss"
+            }
+          ]
+        },
+        "multiValue" : false,
+        "lines" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "findthis"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.inputValue;\nconst res = $actions.getVar(\"results\");\nconst results = JSON.parse(res);\nfor (var i = 0; i < results.length; i++) {\n  if (results[i].title == text) {\n    var output = JSON.stringify(results[i]);\n    $actions.resolve(output);\n  }\n}"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "showthis"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar title = content.title;\n$actions.resolve(title);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "title"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar author = content.author;\n$actions.resolve(author);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "author"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar description = content.content;\n$actions.resolve(description);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "description"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar url = content.url;\n$actions.resolve(url);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "url"
+        }
+      }
+    },
+    {
+      "type" : "@flow.javascript",
+      "parameters" : {
+        "script" : {
+          "value" : "const text = $actions.getVar(\"showthis\");\nvar content = JSON.parse(text);\nvar cover = content.cover;\n$actions.resolve(cover);"
+        }
+      }
+    },
+    {
+      "type" : "@flow.set-variable",
+      "parameters" : {
+        "value" : {
+          "value" : "$",
+          "tokens" : [
+            {
+              "location" : 0,
+              "value" : "@input"
+            }
+          ]
+        },
+        "name" : {
+          "value" : "cover"
+        }
+      }
+    },
+    {
+      "type" : "@ui.render-html",
+      "parameters" : {
+        "showsProgress" : false,
+        "title" : {
+          "value" : ""
+        },
+        "html" : {
+          "value" : "<!DOCTYPE html>\n<html>\n\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style type=\"text\/css\">\n    .img {\n      position: relative;\n      width: 100%;\n      height: 100%;\n      left: 0;\n      top: 0;\n    }\n  <\/style>\n<\/head>\n\n<body\n  style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"; background-color:AliceBlue'>\n  <h2>$<\/h2>\n  <div style=\"color:rgb(153,153,153); font-size:15px;\"><b>$ <\/b> <\/div>\n  <div>$<br><a href=$>👉点此跳转原文<\/a><br><img class=\"img\" src=$ alt=\"文章封面获取失败\"><\/div>\n<\/body>\n\n<\/html>\n",
+          "tokens" : [
+            {
+              "location" : 622,
+              "value" : "cover"
+            },
+            {
+              "location" : 583,
+              "value" : "url"
+            },
+            {
+              "location" : 570,
+              "value" : "description"
+            },
+            {
+              "location" : 549,
+              "value" : "author"
+            },
+            {
+              "location" : 484,
+              "value" : "title"
+            }
+          ]
+        },
+        "opaque" : true
+      }
+    }
+  ],
+  "buildVersion" : 1,
+  "name" : "RSS",
+  "clientMinVersion" : 1,
+  "summary" : "",
+  "icon" : {
+    "glyph" : "personalhotspot",
+    "color" : "#65AE76"
+  },
+  "clientVersion" : 24
+}
